@@ -24,7 +24,7 @@ unsigned long probeDebounceDelay = 800;
 unsigned long probeLastDebounceTime = millis();
 
 // ciclo di carico da 1sec
-const int cycle_feed = 1000;
+const int cycle_feed = 800;
 unsigned long cycle_feed_started = millis();
 
 // relè da controllare
@@ -32,13 +32,13 @@ const int ssr_feed_pin = 2;
 
 // pausa di 20sec dopo 5 cicli
 int cont_feed = 0;
-const int cont_feed_max = 4; // 5 cicli
+const int cont_feed_max = 3; // 4 cicli
 
 int count_pause = 0; 
 const int count_pause_max = 2; // 3 cicli
 
 unsigned long pause_feed_started = millis();
-const int cycle_feed_pause = 20000; // 20sec
+const int cycle_feed_pause = 10000; // 10sec
 
 // buzzer sonoro di errore dopo 5 cicli
 float power_secco = 0.07;     // percentage
@@ -114,14 +114,12 @@ void loop()
             //Accendi aspiratore e led 
             digitalWrite(ssr_feed_pin, HIGH);
             digitalWrite(ssr_led_pin, HIGH);
-            
-            //resetta contatore di pause
-            count_pause = 0;
         }
         else if ((delta >= cycle_feed) && probeState == HIGH)
         {
             ACCESO_FEED = LOW;
             cont_feed = 0;
+            count_pause = 0;
         }
         else
         {
