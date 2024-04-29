@@ -114,6 +114,9 @@ void loop()
             //Accendi aspiratore e led 
             digitalWrite(ssr_feed_pin, HIGH);
             digitalWrite(ssr_led_pin, HIGH);
+            
+            //resetta contatore di pause
+            count_pause = 0;
         }
         else if ((delta >= cycle_feed) && probeState == HIGH)
         {
@@ -144,7 +147,6 @@ void loop()
 
     if (PAUSE_FEED == HIGH)
     {
-        count_pause = 0;
         digitalWrite(ssr_feed_pin, LOW);
         digitalWrite(ssr_led_pin, LOW);
         if (millis() - pause_feed_started >= cycle_feed_pause)
