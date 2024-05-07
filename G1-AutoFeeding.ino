@@ -13,7 +13,8 @@ const int silentPauseTime = 5000;
 const int alarmTime = 3000;
 const int alarmPauseTime = 17000;
 const int startingDelay = 10000;
-unsigned long debounceDelay = 50;
+unsigned long debounceDelayFeeder = 50;
+unsigned long debounceDelaySensor = 800;
 
 int feedingCicle = 0;
 int pauseCicle = 0;
@@ -42,7 +43,7 @@ bool debouncedFeederStatus(){
     if (currentFeederStatus != lastFeederStatus) 
         lastDebounceTimeFeeder = millis();
     
-    if ((millis() - lastDebounceTimeFeeder) > debounceDelay) 
+    if ((millis() - lastDebounceTimeFeeder) > debounceDelayFeeder) 
         if (currentFeederStatus != lastFeederStatus) 
             lastFeederStatus = currentFeederStatus;
         
@@ -60,7 +61,7 @@ bool debouncedSensorStatus(){
         lastDebounceTimeSensor = millis();
     
     
-    if ((millis() - lastDebounceTimeSensor) > debounceDelay)
+    if ((millis() - lastDebounceTimeSensor) > debounceDelaySensor)
         if (currentSensorStatus != lastSensorStatus)
             lastSensorStatus = currentSensorStatus;
     
