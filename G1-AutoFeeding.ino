@@ -13,7 +13,9 @@ const int silentPauseTime = 5000;
 const int alarmTime = 3000;
 const int alarmPauseTime = 17000;
 const int startingDelay = 10000;
-unsigned long debounceDelay = 50;
+
+unsigned long debounceDelay = 1000;
+unsigned int debounceSample = 10;
 
 int feedingCicle = 0;
 int pauseCicle = 0;
@@ -39,31 +41,31 @@ void setup(){
 
 bool debouncedFeederStatus(){
     bool currentFeederStatus = digitalRead(feederPin);
-    if (currentFeederStatus != lastFeederStatus) 
+    if (currentFeederStatus != lastFeederStatus) {
         lastDebounceTimeFeeder = millis();
-    
-    if ((millis() - lastDebounceTimeFeeder) > debounceDelay) 
-        if (currentFeederStatus != lastFeederStatus) 
-            lastFeederStatus = currentFeederStatus;
-        
+        for(int i = 0; i < debounceSample; i++){
+            delay(debounceDelay/debounceSample);
+            if(currentFeederStatus != digitalRead(feederPin)) 
+                return lastFeederStatus;
+        }
+        //update lastFeederStatus only after X consistent readings
+        lastFeederStatus = currentFeederStatus;
+    }
     return lastFeederStatus;
 }
 
 bool debouncedSensorStatus(){
-    bool currentSensorStatus;
-    if(invertSensorReading) 
-        currentSensorStatus = !digitalRead(sensorPin);
-    else 
-        currentSensorStatus = digitalRead(sensorPin);
-    
-    if (currentSensorStatus != lastSensorStatus) 
+    bool currentSensorStatus = invertSensorReading ? !digitalRead(sensorPin) : digitalRead(sensorPin);
+    if (currentSensorStatus != lastSensorStatus) {
         lastDebounceTimeSensor = millis();
-    
-    
-    if ((millis() - lastDebounceTimeSensor) > debounceDelay)
-        if (currentSensorStatus != lastSensorStatus)
-            lastSensorStatus = currentSensorStatus;
-    
+        for(int i = 0; i < debounceSample; i++){
+            delay(debounceDelay/debounceSample);
+            if(currentSensorStatus != invertSensorReading ? !digitalRead(sensorPin) : digitalRead(sensorPin)) 
+                return lastSensorStatus;
+        }
+        //update lastSensorStatus only after X consistent readings
+        lastSensorStatus = currentSensorStatus;
+    }
     return lastSensorStatus;
 }
 
