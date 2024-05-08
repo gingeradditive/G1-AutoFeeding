@@ -1,10 +1,10 @@
-const bool invertSensorReading = false; 
+#define relayPin 2
+#define ledPin 3
+#define buzzerPin 12
+#define sensorPin 4
+#define feederPin 9
 
-const int relayPin = 2;
-const int ledPin = 3;
-const int buzzerPin = 12;
-const int sensorPin = 4;
-const int feederPin = 9;
+const bool invertSensorReading = false; 
 
 const int maxFeedingCicle = 3;
 const int maxPauseCicle = 3;
@@ -14,17 +14,15 @@ const int alarmTime = 3000;
 const int alarmPauseTime = 17000;
 const int startingDelay = 10000;
 
-unsigned long debounceDelayFeeder = 50;
-unsigned long debounceDelaySensor = 800;
-unsigned int debounceSample = 5;
+unsigned long debounceDelayFeeder = 1000;
+unsigned long debounceDelaySensor = 1000;
+unsigned int debounceSample = 10;
 
 int feedingCicle = 0;
 int pauseCicle = 0;
 
 bool lastFeederStatus = LOW;
 bool lastSensorStatus = LOW;
-unsigned long lastDebounceTimeFeeder = 0;
-unsigned long lastDebounceTimeSensor = 0;
 
 void setup(){
     pinMode(relayPin, OUTPUT);
@@ -38,17 +36,25 @@ void setup(){
     digitalWrite(buzzerPin, LOW);
     
     delay(startingDelay);
+
+    //Serial.begin(9600);
+    //Serial.print("Starting Auto Feeding System");
 }
 
 bool debouncedFeederStatus(){
     bool currentFeederStatus = digitalRead(feederPin);
     if (currentFeederStatus != lastFeederStatus) {
-        lastDebounceTimeFeeder = millis();
+        //Serial.print("Start Feed Debounce ");
+        //Serial.print("| Waiting: ");
         for(int i = 0; i < debounceSample; i++){
             delay(debounceDelayFeeder/debounceSample);
-            if(currentFeederStatus != digitalRead(feederPin)) 
+            if(currentFeederStatus != digitalRead(feederPin)) {
+                //Serial.println("\n| Debounce Failed");
                 return lastFeederStatus;
+            }
+            //Serial.print(" . ");
         }
+        //Serial.println("\n| Debounce Success");
         //update lastFeederStatus only after X consistent readings
         lastFeederStatus = currentFeederStatus;
     }
@@ -58,12 +64,17 @@ bool debouncedFeederStatus(){
 bool debouncedSensorStatus(){
     bool currentSensorStatus = invertSensorReading ? !digitalRead(sensorPin) : digitalRead(sensorPin);
     if (currentSensorStatus != lastSensorStatus) {
-        lastDebounceTimeSensor = millis();
+        //Serial.print("Start Sensor Debounce ");
+        //Serial.print("| Waiting: ");
         for(int i = 0; i < debounceSample; i++){
             delay(debounceDelaySensor/debounceSample);
-            if(currentSensorStatus != invertSensorReading ? !digitalRead(sensorPin) : digitalRead(sensorPin)) 
+            if(currentSensorStatus != invertSensorReading ? !digitalRead(sensorPin) : digitalRead(sensorPin)) {
+                //Serial.println("\n| Debounce Failed");
                 return lastSensorStatus;
+            }
+            //Serial.print(" . ");
         }
+        //Serial.println("\n| Debounce Success");
         //update lastSensorStatus only after X consistent readings
         lastSensorStatus = currentSensorStatus;
     }
@@ -75,6 +86,7 @@ void loop(){
     if(debouncedFeederStatus() == false || debouncedSensorStatus() == true) {
         digitalWrite(relayPin, LOW);
         digitalWrite(ledPin, LOW);
+        //Serial.println("Feeder OFF");
         feedingCicle = 0; 
         pauseCicle = 0; 
     }
@@ -83,12 +95,14 @@ void loop(){
             feedingCicle = 0;
             digitalWrite(relayPin, LOW);
             digitalWrite(ledPin, LOW);
+            //Serial.println("Feeder OFF - Alarm");
             if(pauseCicle >= maxPauseCicle) {
                 pauseCicle = 0;
                 digitalWrite(buzzerPin, HIGH);
                 delay(alarmTime);
                 digitalWrite(buzzerPin, LOW);
                 delay(alarmPauseTime);
+                //Serial.println("Buzzer Alarm");
             }
             else {
                 delay(silentPauseTime);
@@ -98,6 +112,7 @@ void loop(){
         else {
             digitalWrite(relayPin, HIGH);
             digitalWrite(ledPin, HIGH);
+            //Serial.println("Feeder ON");
             delay(feedingTime);
             feedingCicle ++; 
         }
