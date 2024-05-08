@@ -14,8 +14,9 @@ const int alarmTime = 3000;
 const int alarmPauseTime = 17000;
 const int startingDelay = 10000;
 
-unsigned long debounceDelay = 1000;
-unsigned int debounceSample = 10;
+unsigned long debounceDelayFeeder = 50;
+unsigned long debounceDelaySensor = 800;
+unsigned int debounceSample = 5;
 
 int feedingCicle = 0;
 int pauseCicle = 0;
@@ -44,7 +45,7 @@ bool debouncedFeederStatus(){
     if (currentFeederStatus != lastFeederStatus) {
         lastDebounceTimeFeeder = millis();
         for(int i = 0; i < debounceSample; i++){
-            delay(debounceDelay/debounceSample);
+            delay(debounceDelayFeeder/debounceSample);
             if(currentFeederStatus != digitalRead(feederPin)) 
                 return lastFeederStatus;
         }
@@ -59,7 +60,7 @@ bool debouncedSensorStatus(){
     if (currentSensorStatus != lastSensorStatus) {
         lastDebounceTimeSensor = millis();
         for(int i = 0; i < debounceSample; i++){
-            delay(debounceDelay/debounceSample);
+            delay(debounceDelaySensor/debounceSample);
             if(currentSensorStatus != invertSensorReading ? !digitalRead(sensorPin) : digitalRead(sensorPin)) 
                 return lastSensorStatus;
         }
